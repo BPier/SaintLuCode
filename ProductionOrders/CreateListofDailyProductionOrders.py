@@ -3,6 +3,7 @@ from csv import writer
 from os.path import exists
 from pathlib import Path
 from os import chdir
+from os import getlogin
 import argparse
 import datetime
 import logging
@@ -10,11 +11,15 @@ from time import sleep
 
 # Move into the right folder
 
+print("=== Starting export ... ===")
 chdir("//SERVER1/ServerData/Production/ProductionOrders_DailyPrint")
 date = datetime.datetime.now()      
 FilePath = Path(date.strftime("%Y-%m-%d")+"_ProdOrder.csv")
 LogPath = Path(date.strftime("%Y-%m-%d")+"_ProdOrder.log")
 logging.basicConfig(filename=LogPath, filemode='a', format='%(asctime)s - %(levelname)s - %(message)s',level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler())
+logging.info("--- Execution of the script initiated by {} ---".format(getlogin())) 
+
 
 def ParseArguments():
     parser = argparse.ArgumentParser()
@@ -44,7 +49,7 @@ if (not exists(FilePath)):
         with open(FilePath, 'w', newline='') as NewCsv:
             writer_object = writer(NewCsv, delimiter =',')
             writer_object.writerow(headersCSV)
-            logging.info('A new file has been created :') 
+            logging.info('A new file has been created : {}'.format(FilePath)) 
             NewCsv.close()
     except Exception as e:
         logging.error('An error occured when creating the file - ')
@@ -63,8 +68,7 @@ if (ProdOrder!=None):
             writer_object.writerow(list_data)  
             # Close the file object
             CsvFile.close()
-            logging.info('A line has been added for Prod Order #')
-            logging.info(ProdOrder)
+            logging.info('A line has been added for Prod Order #{}'.format(ProdOrder))
     except Exception as e:
             logging.error('An error occured when updating the file - ')
             # logging.error(' '.join(list_data))
@@ -75,3 +79,8 @@ if (ProdOrder!=None):
             sleep(20)
 else:
     logging.warning("Production Number is Empty, not creating a new line")
+    print("[WARNING] Production Number is Empty, not creating a new line")
+
+logging.info("--- End of the script by {} ---".format(getlogin())) 
+
+# input("Press enter to continue ...")
